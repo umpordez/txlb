@@ -1,7 +1,7 @@
 {
     "name": "txlb",
     "version": "0.0.1",
-    "description": "load balancer using greenlock, redis and s3",
+    "description": "load balancer using greenlock and s3",
     "main": "index.js",
     "scripts": {},
     "author": "",
@@ -10,7 +10,6 @@
         "argument-validator": "^0.1.0",
         "aws-sdk": "^2.1495.0",
         "greenlock": "^4.0.4",
-        "lodash": "^4.17.21",
-        "redis": "^4.6.10"
+        "lodash": "^4.17.21"
     }
 }

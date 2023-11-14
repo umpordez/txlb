@@ -23,7 +23,8 @@ module.exports = (config) => {
             ...config.getProxyConfig(req)
         };
 
-        logger.info(`proxy: ${req.url} > ${options.hostname}:${options.port}`);
+        const { hostname, port } = options;
+        logger.info(`[${req.ip}] ${req.url} > ${hostname}:${port}`);
 
         const proxy = http.request(options, function(proxyRes) {
             res.writeHead(proxyRes.statusCode, proxyRes.headers);
