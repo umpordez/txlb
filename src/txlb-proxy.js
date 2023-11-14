@@ -1,13 +1,34 @@
 const http = require('http');
 
+const finalhandler = require('finalhandler');
+const serveStatic = require('serve-static');
+
 const fs = require('fs');
 const _ = require('lodash');
 const logger = require('./logger');
 
-module.exports = (config) => {
+module.exports = (config = {}) => {
     return async function onRequest(req, res) {
         const pathname = req.url;
         const domain = req.headers.host;
+
+        const static = config.staticFileCheck &&
+            config.staticFileCheck(req, domain, pathname);
+
+        if (static) {
+            logger.info(`[${ip}] ${req.url} static > ${static.path}`);
+
+            serveStatic(static.path, {
+                cacheControl: true,
+                etag: true,
+                immutable: true,
+                maxAge: '360d',
+                lastModified: true,
+                ...(static.config || {})
+            })(req, res, finalhandler(req, res));
+
+            return;
+        }
 
         const options = {
             port: 7000,
@@ -20,7 +41,7 @@ module.exports = (config) => {
                     req.connection.remoteAddress || '0.0.0.0'
             },
 
-            ...config.getProxyConfig(req)
+            ...(config?.getProxyConfig(req) || {})
         };
 
         const { hostname, port } = options;
