@@ -23,7 +23,7 @@ async function tryGetServerNameInDb(servername, greenlock, isValidServerName) {
 }
 
 // secureOpts.SNICallback = sni.create(greenlock, secureOpts);
-sni.create = function(greenlock, secureOpts) {
+sni.create = function(greenlock, secureOpts, isValidServerName) {
     const _cache = {};
     const defaultServername = greenlock.servername || '';
 
@@ -140,7 +140,9 @@ sni.create = function(greenlock, secureOpts) {
         // existing fresh cert or issue a new one
         return greenlock.get({ servername }).then(async function(result) {
             if (!result) {
-                result = await tryGetServerNameInDb(servername, greenlock);
+                result = await tryGetServerNameInDb(
+                    servername, greenlock, isValidServerName
+                );
             }
 
             let metadata = getCachedMeta(servername);
