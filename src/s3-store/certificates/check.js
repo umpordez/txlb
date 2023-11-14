@@ -38,5 +38,5 @@ module.exports.check = (opts, options) => {
         privkey: values[0],
         cert: values[1],
         chain: values[2]
-    }));
+    })).catch((ex) => null);
 };
