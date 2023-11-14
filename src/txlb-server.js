@@ -144,7 +144,7 @@ function getHttpHandler(gl, handler) {
 }
 
 async function initServers(config) {
-    const { app } = config;
+    const { isValidServerName, app } = config;
 
     const greenlock = await require('./greenlock').create({
         packageRoot: __dirname,
@@ -162,7 +162,11 @@ async function initServers(config) {
         logger.info('Listening port 80');
 
         const secureOpts = {};
-        secureOpts.SNICallback = sni.create(greenlock, secureOpts);
+        secureOpts.SNICallback = sni.create(
+            greenlock,
+            secureOpts,
+            isValidServerName
+        );
 
         const _https = https.createServer(secureOpts, app);
 

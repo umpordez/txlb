@@ -10,8 +10,9 @@ const refreshStagger = Math.round(Math.PI * 5 * (60 * 1000));
 // and another, about 30 seconds
 const smallStagger = Math.round(Math.PI * (30 * 1000));
 
-async function tryGetServerNameInDb(servername, greenlock) {
-    // SHOULD validate DB
+async function tryGetServerNameInDb(servername, greenlock, isValidServerName) {
+    const isValid = await isValidServerName(servername);
+    if (!isValid) { return null; }
 
     await greenlock.add({
         subject: servername,
