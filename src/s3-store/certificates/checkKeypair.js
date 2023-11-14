@@ -21,5 +21,5 @@ module.exports.checkKeypair = (opts, options) => {
             return {
                 privateKeyPem: data.Body.toString()
             };
-        });
+        }).catch((ex) => null);
 };
