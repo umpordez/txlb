@@ -47,7 +47,6 @@ sni.create = function(greenlock, secureOpts) {
     }
 
     function getSecureContext(servername, cb) {
-        logger.info('debug sni', servername);
         if (typeof servername !== 'string') {
             // this will never happen... right? but stranger things have...
             logger.error('[sanity fail] non-string servername:', servername);

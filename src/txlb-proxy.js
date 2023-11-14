@@ -24,7 +24,10 @@ module.exports = (config) => {
         };
 
         const { hostname, port } = options;
-        logger.info(`[${req.ip}] ${req.url} > ${hostname}:${port}`);
+        const ip = req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress || '0.0.0.0';
+
+        logger.info(`[${ip}] ${req.url} > ${hostname}:${port}`);
 
         const proxy = http.request(options, function(proxyRes) {
             res.writeHead(proxyRes.statusCode, proxyRes.headers);
