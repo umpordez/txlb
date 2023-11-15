@@ -50,7 +50,8 @@ module.exports = (config = {}) => {
         logger.info(`[${ip}] ${req.url} > ${hostname}:${port}`);
 
         proxyServer.web(req, res, {
-            target: `http://${hostname}:${port}`
+            target: `http://${hostname}:${port}`,
+            xfwd: true
         }, function(e) {
             logger.error(e);
         });
