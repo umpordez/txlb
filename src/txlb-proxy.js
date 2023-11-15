@@ -3,9 +3,13 @@ const http = require('http');
 const finalhandler = require('finalhandler');
 const serveStatic = require('serve-static');
 
+const httpProxy = require('http-proxy');
+
 const fs = require('fs');
 const _ = require('lodash');
 const logger = require('./logger');
+
+const proxyServer = httpProxy.createProxyServer({});;
 
 module.exports = (config = {}) => {
     return async function onRequest(req, res) {
@@ -14,6 +18,18 @@ module.exports = (config = {}) => {
 
         const static = config.staticFileCheck &&
             config.staticFileCheck(req, domain, pathname);
+
+        const ip = req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress || '0.0.0.0';
+
+        if (!req.connection.encrypted) {
+            res.writeHead(302, {
+                'Location': `https://${domain}${req.originUrl || req.url}`
+            });
+
+            res.end();
+            return;
+        }
 
         if (static) {
             logger.info(`[${ip}] ${req.url} static > ${static.path}`);
@@ -30,39 +46,13 @@ module.exports = (config = {}) => {
             return;
         }
 
-        const options = {
-            port: 7000,
-            path: req.url,
-            method: req.method,
-
-            headers: {
-                ...req.headers,
-                'x-forwarded-for': req.headers['x-forwarded-for'] ||
-                    req.connection.remoteAddress || '0.0.0.0'
-            },
-
-            ...(config?.getProxyConfig(req) || {})
-        };
-
-        const { hostname, port } = options;
-        const ip = req.headers['x-forwarded-for'] ||
-            req.connection.remoteAddress || '0.0.0.0';
-
+        const { port, hostname } = await config.getProxyConfig(req);
         logger.info(`[${ip}] ${req.url} > ${hostname}:${port}`);
 
-        const proxy = http.request(options, function(proxyRes) {
-            res.writeHead(proxyRes.statusCode, proxyRes.headers);
-            proxyRes.pipe(res, { end: true });
+        proxyServer.web(req, res, {
+            target: `http://${hostname}:${port}`
+        }, function(e) {
+            logger.error(e);
         });
-
-        proxy.on('error', (err) => {
-            if ((/socket hang up/).test(err)) {
-                return;
-            }
-
-            logger.error(err);
-        });
-
-        req.pipe(proxy, { end: true });
     };
 };
