@@ -46,7 +46,16 @@ module.exports = (config = {}) => {
             return;
         }
 
-        const { port, hostname } = await config.getProxyConfig(req);
+        const { port, hostname, redirect } = await config.getProxyConfig(req);
+
+        if (redirect) {
+            logger.info(`[${ip}] ${req.url} redirect> ${redirect}`);
+
+            res.writeHead(302, { 'Location': redirect });
+            res.end();
+            return;
+        }
+
         logger.info(`[${ip}] ${req.url} > ${hostname}:${port}`);
 
         proxyServer.web(req, res, {
