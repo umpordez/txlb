@@ -16,6 +16,13 @@ module.exports = (config = {}) => {
         const pathname = req.url;
         const domain = req.headers.host;
 
+        const isMultipartFormData = (req.headers['content-type'] || '')
+            .includes('multipart/form-data');
+
+        if (isMultipartFormData && config.multipartFormDataHandler) {
+            return config.multipartFormDataHandler(req, res);
+        }
+
         const static = config.staticFileCheck &&
             config.staticFileCheck(req, domain, pathname);
 
